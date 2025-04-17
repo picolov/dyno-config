@@ -1,0 +1,27 @@
+{
+  "name": "dyno-config",
+  "version": "0.1.0-beta.1",
+  "description": "dynamic config that can be updated in runtime",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./dist",
+    "test": "bun test",
+    "publish": "npm publish",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": ["config", "dynamic config", "runtime config", "typescript"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "@types/bun": "^1.2.9"
+  }
+}
