@@ -4,7 +4,6 @@
   "description": "dynamic config that can be updated in runtime",
   "type": "module",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -12,16 +11,21 @@
     }
   },
   "scripts": {
-    "build": "bun build ./src/index.ts --outdir ./dist",
+    "build": "bun build ./src/index.js --outdir ./dist --target node",
     "test": "bun test",
     "publish": "npm publish",
     "prepublishOnly": "bun run build"
   },
-  "keywords": ["config", "dynamic config", "runtime config", "typescript"],
+  "keywords": ["config", "dynamic config", "runtime config"],
   "author": "",
   "license": "MIT",
+  "dependencies": {
+    "ioredis": "^5.3.2",
+    "yaml": "^2.3.4",
+    "strip-json-comments": "^5.0.1"
+  },
   "devDependencies": {
-    "typescript": "^5.8.3",
-    "@types/bun": "^1.2.9"
+    "@types/bun": "^1.2.9",
+    "@types/ioredis": "^5.0.0"
   }
 }

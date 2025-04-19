@@ -8,95 +8,134 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![Bun](https://img.shields.io/badge/Bun-1.0.0-blue?style=flat-square)](https://bun.sh)
 
-A lightweight, fast, and type-safe publish-subscribe library for communication between components. Built with Bun and fully compatible with Node.js.
+A dynamic configuration library that allows runtime updates to configuration values using Redis as a backend.
 
 ## ✨ Features
 
-- 🔒 Type-safe with TypeScript
-- 🌐 Works in both Bun and Node.js
-- 🧩 Simple and intuitive API
-- 🚀 Asynchronous by design
+- Configuration defined in YAML, JSON, or JSONC files
+- Runtime configuration updates
+- Redis-backed configuration storage
+- Type-safe configuration access
+- Automatic configuration updates through Redis pub/sub
+- Force refresh capability
+- Support for Redis Cluster and Sentinel
 
 ## 📦 Installation
 
 ```bash
-# Using npm
 npm install dyno-config
-
-# Using yarn
-yarn add dyno-config
-
-# Using pnpm
-pnpm add dyno-config
 ```
 
 ## 🚀 Quick Start
 
-```typescript
-import { emit, listen, unlisten } from 'dyno-config';
+1. First, create a configuration file in your project root. You can use either YAML, JSON, or JSONC format:
 
-// Subscribe to a topic
-const subscriptionId = await listen('user-updates', (topic, payload) => {
-  console.log(`📨 Received update on ${topic}:`, payload);
-});
+```yaml
+# config.yml
+feature_flags:
+  experimentalFeature: false
+  maintenanceMode: false
 
-// Publish a message
-await emit('user-updates', { 
-  userId: 123,
-  action: 'profile-updated',
-  timestamp: new Date()
-});
-
-// Unsubscribe when done
-await unlisten('user-updates', subscriptionId);
+api_settings:
+  timeout: 5000
+  retryCount: 3
+  baseUrl: "https://api.example.com"
 ```
 
-## 📚 API Reference
+```json
+// config.json
+{
+  "feature_flags": {
+    "random": 123,
+    "experimentalFeature": false,
+    "maintenanceMode": false
+  },
+  "api_settings": {
+    "timeout": 5000,
+    "retryCount": 3,
+    "baseUrl": "https://api.example.com"
+  }
+}
+```
 
-### `emit(topic: string, payload: any): Promise<void>`
+```jsonc
+// config.jsonc
+{
+  // Feature flags configuration
+  "feature_flags": {
+    "random": 123,              // Random number for feature testing
+    "experimentalFeature": false,  // Enable experimental features
+    "maintenanceMode": false    // Enable maintenance mode
+  },
+  // API settings
+  "api_settings": {
+    "timeout": 5000,        // Request timeout in milliseconds
+    "retryCount": 3,        // Number of retry attempts
+    "baseUrl": "https://api.example.com"  // API base URL
+  }
+}
+```
 
-Publish a message to a topic.
+2. Initialize and use the configuration manager:
 
-**Parameters:**
-- `topic` (string): The topic to publish to
-- `payload` (any): The message payload
+```javascript
+import { DynamicConfigManager } from 'dyno-config';
 
-**Example:**
-```typescript
-await emit('system-alerts', {
-  level: 'warning',
-  message: 'High CPU usage detected',
-  timestamp: new Date()
+// Create the configuration manager
+const configManager = new DynamicConfigManager({
+  serviceName: 'my-service',
+  redisUrl: 'redis://localhost:6379',
+  configPath: 'config.json' // optional, defaults to 'dyn-config.json'
 });
-```
 
-### `listen(topic: string, callback: (topic: string, payload: any) => void): Promise<string>`
-
-Subscribe to a topic.
-
-**Parameters:**
-- `topic` (string): The topic to subscribe to
-- `callback` (function): Function to be called when a message is received
-
-**Returns:**
-- `Promise<string>`: A unique subscription ID
-
-**Example:**
-```typescript
-const subId = await listen('data-updates', (topic, data) => {
-  console.log(`New data on ${topic}:`, data);
+// Or use an existing Redis client
+const redisClient = new Redis('redis://localhost:6379');
+const configManager = new DynamicConfigManager({
+  serviceName: 'my-service',
+  redisClient: redisClient
 });
+
+// Initialize the manager (this connects to Redis and loads configurations)
+await configManager.initialize();
+
+// Get configuration values
+const featureFlags = configManager.get('feature_flags');
+console.log(featureFlags.random); // 123
+
+// Listen for configuration updates
+configManager.onUpdate((key, value) => {
+  console.log(`Configuration ${key} updated to:`, value);
+});
+
+// Update a configuration value
+await configManager.set('feature_flags', {
+  experimentalFeature: true,
+  maintenanceMode: false
+});
+
+// Force refresh all configurations
+await configManager.refresh();
+
+// Clean up when done
+await configManager.disconnect();
 ```
 
-### `unlisten(topic: string, uuid: string): Promise<void>`
+## 📚 Examples
 
-Unsubscribe from a topic.
+Check out the `examples` folder for complete working examples:
 
-**Parameters:**
-- `topic` (string): The topic to unsubscribe from
-- `uuid` (string): The subscription ID to remove
+- `node-web-server`: A simple web server that uses dyno-config for dynamic configuration
+- Demonstrates how to:
+  - Initialize the configuration manager
+  - Use configuration values in a web server
+  - Update configurations at runtime
+  - Handle configuration updates
 
-**Example:**
-```typescript
-await unlisten('data-updates', subscriptionId);
-```
+## 🔌 Redis Integration
+
+The library uses Redis for:
+- Storing configuration values
+- Publishing configuration updates
+- Subscribing to configuration changes
+
+Configuration keys in Redis follow the pattern: `<service_name>_CONFIG_<config_key>`

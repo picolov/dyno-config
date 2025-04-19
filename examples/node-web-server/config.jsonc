@@ -1,0 +1,16 @@
+{
+  // Feature flags control various UI and experimental features
+  "feature_flags": {
+    // Enable maintenance mode
+    "maintenanceMode": true,
+    // Enable experimental features that are still in testing
+    "experimentalFeature": false
+  },
+  // API connection and retry settings
+  "api_settings": {
+    // Timeout in milliseconds for API requests
+    "timeout": 5000,
+    // Maximum number of retry attempts for failed requests
+    "max_retries": 3
+  }
+}

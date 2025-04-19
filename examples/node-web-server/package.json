@@ -1,0 +1,17 @@
+{
+  "name": "dyno-config-example",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "update-config": "node src/update-config.js",
+    "stop-redis": "node src/stop-redis.js",
+    "start-redis": "node src/start-redis.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "redis": "^4.6.13",
+    "redis-server": "^1.2.2",
+    "dyno-config": "file:../.."
+  }
+}
