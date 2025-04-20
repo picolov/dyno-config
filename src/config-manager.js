@@ -83,7 +83,7 @@ export class DynamicConfigManager {
    * @private
    */
   getRedisKey(configKey) {
-    return `${this.serviceName}_CONFIG_${configKey}`;
+    return `DYNO_CONFIG_${this.serviceName}_${configKey}`;
   }
 
   /**
@@ -112,14 +112,21 @@ export class DynamicConfigManager {
 
     // Handle messages
     this.pubsub.on('message', (channel, message) => {
-      const key = channel.replace(`${this.serviceName}_CONFIG_`, '');
-      try {
-        const value = JSON.parse(message);
-        this.configCache.set(key, value);
-        this.notifyUpdate(key, value);
-      } catch (err) {
-        console.error(`[${this.serviceName}] Error parsing message for ${key}:`, err);
-      }
+        const key = channel.replace(`DYNO_CONFIG_${this.serviceName}_`, '');
+        try {
+          const value = JSON.parse(message);
+          if (value === "_DELETED_") {
+            if (this.configCache.has(key)) {
+              this.configCache.set(key, this.configSchema[key]);
+              this.notifyUpdate(key, "_DELETED_");
+            }
+          } else {
+            this.configCache.set(key, value);
+            this.notifyUpdate(key, value);
+          }
+        } catch (err) {
+          console.error(`[${this.serviceName}] Error parsing message for ${key}:`, err);
+        }      
     });
   }
 
@@ -186,6 +193,29 @@ export class DynamicConfigManager {
       this.notifyUpdate(key, value);
     } catch (err) {
       console.error(`[${this.serviceName}] Error updating ${key}:`, err);
+      throw err;
+    }
+  }
+
+  /**
+   * Deletes a configuration value
+   * @param {string} key - The configuration key to delete
+   */
+  async del(key) {
+    if (!this.configSchema[key]) {
+      throw new Error(`Configuration key "${key}" not found in schema`);
+    }
+    if (!this.redisClient) {
+      throw new Error(`redis client not initialized`);
+    }
+    const redisKey = this.getRedisKey(key);
+    try {
+      await this.redisClient.del(redisKey);
+      await this.redisClient.publish(redisKey, "_DELETED_");
+      this.configCache.delete(key);
+      this.notifyUpdate(key, "_DELETED_");
+    } catch (err) {
+      console.error(`[${this.serviceName}] Error deleting ${key}:`, err);
       throw err;
     }
   }

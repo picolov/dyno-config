@@ -18,12 +18,12 @@ A dynamic configuration library that allows runtime updates to configuration val
 - Type-safe configuration access
 - Automatic configuration updates through Redis pub/sub
 - Force refresh capability
-- Support for Redis Cluster and Sentinel
+- Support both Node and Bun, created using Bun
 
 ## 📦 Installation
 
 ```bash
-npm install dyno-config
+npm install --save dyno-config
 ```
 
 ## 🚀 Quick Start
@@ -138,4 +138,4 @@ The library uses Redis for:
 - Publishing configuration updates
 - Subscribing to configuration changes
 
-Configuration keys in Redis follow the pattern: `<service_name>_CONFIG_<config_key>`
+Configuration keys in Redis follow the pattern: `DYNO_CONFIG_<service_name>_<config_key>`

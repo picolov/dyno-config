@@ -1,6 +1,6 @@
 {
   "name": "dyno-config",
-  "version": "0.1.0-beta.1",
+  "version": "0.1.0-beta.2",
   "description": "dynamic config that can be updated in runtime",
   "type": "module",
   "main": "dist/index.js",
