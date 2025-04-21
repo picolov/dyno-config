@@ -1,0 +1,6 @@
+feature_flags:
+  maintenanceMode: true
+  experimentalFeature: false
+api_settings:
+  timeout: 5000
+  max_retries: 3
