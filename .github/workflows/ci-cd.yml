@@ -23,7 +23,7 @@ jobs:
         run: bun install
       
       - name: Run tests
-        run: bun run test
+        run: bun test
 
   publish:
     needs: test
