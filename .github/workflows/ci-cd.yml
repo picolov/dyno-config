@@ -45,14 +45,13 @@ jobs:
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
           npm config set registry https://registry.npmjs.org/
       
-      - name: Publish Beta to npm
-        if: ${{ contains(github.event.release.tag_name, '-beta.') }}
-        run: npm publish --access public --tag beta
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      
-      - name: Publish Stable to npm
-        if: ${{ !contains(github.event.release.tag_name, '-beta.') }}
-        run: npm publish --access public
+      - name: Publish to npm
+        run: |
+          if [[ "${{ github.event.release.tag_name }}" == *"-beta."* ]]; then
+            npm publish --access public --tag beta
+            npm dist-tag add dyno-config@${{ github.event.release.tag_name }} latest
+          else
+            npm publish --access public
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} 
